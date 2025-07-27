@@ -6,12 +6,14 @@
     <title>TCAS Engineering Programs Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
+        /* === CSS RESET === */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        /* === LAYOUT === */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -21,46 +23,12 @@
 
         .dashboard-container {
             display: grid;
-            grid-template-columns: 80px 1fr;
+            grid-template-columns: 1fr;
             width: 100vw;
             height: 100vh;
             gap: 15px;
             padding: 15px;
             overflow: hidden;
-        }
-
-        .sidebar {
-            background: #00d4aa;
-            border-radius: 15px;
-            padding: 20px 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 30px;
-        }
-
-        .sidebar-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-icon:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
-        }
-
-        .sidebar-icon.active {
-            background: white;
-            color: #00d4aa;
         }
 
         .main-content {
@@ -76,6 +44,7 @@
             max-height: calc(100vh - 30px);
         }
 
+        /* === HEADER === */
         .header {
             grid-column: 1 / -1;
             display: flex;
@@ -84,27 +53,13 @@
             margin-bottom: 10px;
         }
 
-        .search-box {
-            position: relative;
+        .header h1 {
+            color: #333;
+            font-size: 1.8em;
+            font-weight: 600;
         }
 
-        .search-box input {
-            padding: 12px 40px 12px 20px;
-            border: none;
-            border-radius: 25px;
-            background: #f8f9fa;
-            outline: none;
-            width: 300px;
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #00d4aa;
-        }
-
+        /* === STAT CARDS === */
         .stat-card {
             background: white;
             border-radius: 15px;
@@ -116,6 +71,12 @@
             overflow: hidden;
             gap: 20px;
             min-height: 100px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
 
         .stat-card::before {
@@ -152,6 +113,7 @@
             letter-spacing: 1px;
         }
 
+        /* === CHART CARDS === */
         .chart-card {
             background: white;
             border-radius: 15px;
@@ -160,6 +122,12 @@
             min-height: 320px;
             display: flex;
             flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
 
         .chart-title {
@@ -173,21 +141,44 @@
             flex-shrink: 0;
         }
 
-        .chart-title::before {
-            font-size: 1.5em;
-        }
-
         .chart-container {
             flex: 1;
             position: relative;
             min-height: 250px;
         }
 
+        /* === CHART LAYOUTS === */
         .progress-card {
             grid-column: span 4;
             min-height: 380px;
         }
 
+        .mini-chart {
+            grid-column: span 4;
+            min-height: 380px;
+        }
+
+        .line-chart {
+            grid-column: span 12;
+            min-height: 420px;
+        }
+
+        .university-details-card {
+            grid-column: span 12;
+            min-height: 504px; /* 20% higher than standard line-chart */
+        }
+
+        .bar-chart {
+            grid-column: span 6;
+            min-height: 420px;
+        }
+
+        .pie-chart {
+            grid-column: span 6;
+            min-height: 420px;
+        }
+
+        /* === PROGRESS CIRCLE === */
         .progress-circle {
             width: 160px;
             height: 160px;
@@ -205,49 +196,7 @@
             color: #00d4aa;
         }
 
-        .mini-chart {
-            grid-column: span 4;
-            min-height: 380px;
-        }
-
-        .line-chart {
-            grid-column: span 12;
-            min-height: 420px;
-        }
-
-        .bar-chart {
-            grid-column: span 6;
-            min-height: 420px;
-        }
-
-        .pie-chart {
-            grid-column: span 6;
-            min-height: 420px;
-        }
-
-        .donut-charts {
-            grid-column: span 4;
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .donut-chart {
-            width: 80px;
-            height: 80px;
-            position: relative;
-        }
-
-        .donut-value {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-
+        /* === LOADING STATES === */
         .loading {
             display: flex;
             justify-content: center;
@@ -271,17 +220,11 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* === RESPONSIVE DESIGN === */
         @media (max-width: 1200px) {
             .dashboard-container {
-                grid-template-columns: 1fr;
                 padding: 10px;
                 gap: 10px;
-            }
-            
-            .sidebar {
-                flex-direction: row;
-                justify-content: center;
-                padding: 10px;
             }
             
             .main-content {
@@ -304,6 +247,11 @@
                 min-height: 350px;
             }
             
+            .university-details-card {
+                grid-column: span 12;
+                min-height: 420px; /* 20% higher than responsive line-chart */
+            }
+            
             .bar-chart, .pie-chart {
                 grid-column: span 6;
                 min-height: 380px;
@@ -313,26 +261,45 @@
                 grid-column: span 6;
                 min-height: 380px;
             }
+
+            .header h1 {
+                font-size: 1.4em;
+            }
+
+            .search-box input {
+                width: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .search-box input {
+                width: 300px;
+            }
+
+            .stat-card,
+            .chart-card,
+            .progress-card,
+            .mini-chart,
+            .line-chart,
+            .university-details-card,
+            .bar-chart,
+            .pie-chart {
+                grid-column: span 12;
+            }
         }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
-        <div class="sidebar">
-            <div class="sidebar-icon active">📊</div>
-            <div class="sidebar-icon">🏠</div>
-            <div class="sidebar-icon">📈</div>
-            <div class="sidebar-icon">⚙️</div>
-            <div class="sidebar-icon">👤</div>
-        </div>
-
         <div class="main-content">
             <div class="header">
-                <h1 style="color: #333; font-size: 1.8em;">TCAS Computer Engineering and AI Engineering Programs Dashboard</h1>
-                <div class="search-box">
-                    <input type="text" placeholder="Search programs...">
-                    <span class="search-icon">🔍</span>
-                </div>
+                <h1>TCAS Computer Engineering and AI Engineering Programs Dashboard</h1>
             </div>
 
             <!-- Stats Cards -->
@@ -357,6 +324,7 @@
                 <div class="stat-content">
                     <div class="stat-value" id="max-cost">-</div>
                     <div class="stat-label">Max Cost (THB)</div>
+                    <div class="stat-university" id="max-cost-uni" style="font-size: 0.8em; color: #888; margin-top: 5px;">-</div>
                 </div>
             </div>
 
@@ -365,22 +333,29 @@
                 <div class="stat-content">
                     <div class="stat-value" id="min-cost">-</div>
                     <div class="stat-label">Min Cost (THB)</div>
+                    <div class="stat-university" id="min-cost-uni" style="font-size: 0.8em; color: #888; margin-top: 5px;">-</div>
                 </div>
             </div>
 
-            <!-- Progress Card -->
-            <div class="chart-card progress-card">
-                <div class="chart-title">🏛️ จำนวนหลักสูตรต่อมหาวิทยาลัย</div>
+            <!-- Main Charts -->
+
+            <div class="chart-card university-details-card">
+                <div class="chart-title">🏫 University Details</div>
                 <div class="chart-container">
-                    <div class="progress-circle">
-                        <canvas id="progressChart"></canvas>
-                        <div class="progress-value">75%</div>
+                    <select id="university-select" style="width: 100%; height: 30px; margin-bottom: 15px; padding: 5px; font-size: 14px;">
+                        <option value="">เลือกมหาวิทยาลัย</option>
+                        <!-- Options will be dynamically populated -->
+                    </select>
+                    <div id="university-details" style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 10px; max-height: 300px; overflow-y: auto;">
+                        <div id="uni-info">
+                            <h4 id="uni-name">มหาวิทยาลัยสงขลานครินทร์</h4>
+                            <div id="uni-programs">กำลังโหลด...</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Mini Charts -->
-            <div class="chart-card mini-chart">
+             <div class="chart-card mini-chart">
                 <div class="chart-title">📊 Program Types</div>
                 <div class="chart-container">
                     <canvas id="miniChart1"></canvas>
@@ -390,44 +365,8 @@
                 </div>
             </div>
 
+            <!-- Field Distribution -->
             <div class="chart-card mini-chart">
-                <div class="chart-title">💰 Cost Ranges</div>
-                <div class="chart-container">
-                    <canvas id="miniChart2"></canvas>
-                </div>
-                <div style="text-align: center; margin-top: 10px;">
-                    <span id="avg-cost-display" style="font-weight: bold; color: #667eea;">-</span> Average
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 5px; padding: 0 20px; font-size: 0.8em; color: #666;">
-                    <span>&lt;20K</span>
-                    <span>20-30K</span>
-                    <span>30-50K</span>
-                    <span>&gt;50K</span>
-                </div>
-            </div>
-
-            <!-- Main Charts -->
-            <div class="chart-card line-chart">
-                <div class="chart-title">� Program Growth Trend</div>
-                <div class="chart-container">
-                    <canvas id="lineChart"></canvas>
-                </div>
-                <div style="text-align: center; margin-top: 10px;">
-                    <span id="growth-rate" style="font-weight: bold; color: #00d4aa;">+15%</span> Growth This Year
-                </div>
-            </div>
-
-            <div class="chart-card bar-chart">
-                <div class="chart-title">�️ Universities by Program Count</div>
-                <div class="chart-container">
-                    <canvas id="barChart"></canvas>
-                </div>
-                <div style="text-align: center; margin-top: 10px;">
-                    <span id="top-uni-count" style="font-weight: bold; color: #667eea;">-</span> Programs at Top University
-                </div>
-            </div>
-
-            <div class="chart-card pie-chart">
                 <div class="chart-title">🎯 Field Distribution</div>
                 <div class="chart-container">
                     <canvas id="pieChart"></canvas>
@@ -436,394 +375,619 @@
                     <span id="top-field-percent" style="font-weight: bold; color: #f093fb;">-</span>% Computer Engineering
                 </div>
             </div>
+
+            <div class="chart-card mini-chart">
+                <div class="chart-title">⭐ Top 10 Cheapest Tuition Fees</div>
+                <div class="chart-container">
+                    <canvas id="miniChart2"></canvas>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                     Tuition Fee
+                </div>
+            </div>
+
+            <div class="chart-card line-chart">
+                <div class="chart-title">💰 ค่าเทอมเฉลี่ยในแต่ละมหาลัย</div>
+                <div class="chart-container">
+                    <canvas id="tuitionBarChart"></canvas>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    Average tuition Fee
+                </div>
+            </div>
+
+            
+            
         </div>
     </div>
 
     <script>
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            loadDashboardData();
-        });
+        // === DASHBOARD CONTROLLER ===
+        class DashboardController {
+            constructor() {
+                this.apiBaseUrl = '';
+                this.charts = {};
+                this.init();
+            }
 
-        async function loadDashboardData() {
-            try {
-                // Load stats
-                const statsResponse = await fetch('/api/stats');
-                const stats = await statsResponse.json();
-                
-                // Update stat cards
-                document.getElementById('total-programs').textContent = stats.total_programs;
-                document.getElementById('total-universities').textContent = stats.total_universities;
-                document.getElementById('max-cost').textContent = new Intl.NumberFormat('th-TH').format(stats.max_cost);
-                document.getElementById('min-cost').textContent = new Intl.NumberFormat('th-TH').format(stats.min_cost);
-                
-                // Update mini chart displays
-                const thaiPrograms = stats.program_types['ภาษาไทย ปกติ'] || 0;
-                const avgCost = Math.round((stats.max_cost + stats.min_cost) / 2);
-                document.getElementById('thai-count').textContent = thaiPrograms;
-                // Update additional chart displays
+            async init() {
+                try {
+                    await this.loadData();
+                } catch (error) {
+                    console.error('Failed to initialize dashboard:', error);
+                    this.showErrorMessage('Failed to load dashboard data');
+                }
+            }
+
+            async loadData() {
+                const [stats, chartData] = await Promise.all([
+                    this.fetchStats(),
+                    this.fetchChartData()
+                ]);
+
+                this.updateStatCards(stats);
+                this.createAllCharts(stats, chartData);
+            }
+
+            async fetchStats() {
+                const response = await fetch('/api/stats');
+                if (!response.ok) throw new Error('Failed to fetch stats');
+                return response.json();
+            }
+
+            async fetchChartData() {
+                const response = await fetch('/api/chart-data');
+                if (!response.ok) throw new Error('Failed to fetch chart data');
+                return response.json();
+            }
+
+            updateStatCards(stats) {
+                const updates = [
+                    { id: 'total-programs', value: stats.total_programs },
+                    { id: 'total-universities', value: stats.total_universities },
+                    { id: 'max-cost', value: new Intl.NumberFormat('th-TH').format(stats.max_cost) },
+                    { id: 'min-cost', value: new Intl.NumberFormat('th-TH').format(stats.min_cost) },
+                    { id: 'max-cost-uni', value: stats.max_cost_university || '-' },
+                    { id: 'min-cost-uni', value: stats.min_cost_university || '-' }
+                ];
+
+                updates.forEach(({ id, value }) => {
+                    const element = document.getElementById(id);
+                    if (element) element.textContent = value;
+                });
+
+                // Update additional displays
+                this.updateAdditionalDisplays(stats);
+            }
+
+            updateAdditionalDisplays(stats) {
+                const thaiPrograms = stats.program_types?.['ภาษาไทย ปกติ'] || 0;
                 const topUniCount = Math.max(...Object.values(stats.university_counts || {})) || 0;
                 const totalPrograms = stats.total_programs || 0;
-                const computerEngPercent = Math.round((totalPrograms * 0.6) / totalPrograms * 100); // Estimate
-                
-                document.getElementById('top-uni-count').textContent = topUniCount;
-                document.getElementById('top-field-percent').textContent = computerEngPercent;
-                
-                // Load chart data
-                const chartResponse = await fetch('/api/chart-data');
-                const chartData = await chartResponse.json();
-                
-                // Create charts
-                createLineChart(chartData.line_chart);
-                createBarChart(chartData.bar_chart);
-                createPieChart(chartData.pie_chart);
-                createMiniCharts(stats);
-                createDonutCharts();
-                createProgressChart(stats.program_distribution);
-                
-            } catch (error) {
-                console.error('Error loading dashboard data:', error);
-                // Show error message or fallback data
+                const computerEngPercent = Math.round((totalPrograms * 0.6) / totalPrograms * 100);
+
+                const updates = [
+                    { id: 'thai-count', value: thaiPrograms },
+                    { id: 'top-uni-count', value: topUniCount },
+                    { id: 'top-field-percent', value: computerEngPercent }
+                ];
+
+                updates.forEach(({ id, value }) => {
+                    const element = document.getElementById(id);
+                    if (element) element.textContent = value;
+                });
+            }
+
+            createAllCharts(stats, chartData) {
+                this.charts.lineChart = this.createLineChart(chartData.line_chart);
+                this.charts.barChart = this.createBarChart(chartData.bar_chart);
+                this.charts.pieChart = this.createPieChart(chartData.pie_chart);
+                this.charts.miniCharts = this.createMiniCharts(stats);
+                this.charts.progressChart = this.createProgressChart(stats);
+                this.charts.tuitionBarChart = this.createTuitionBarChart(stats);
+                this.charts.fieldsBarChart = this.createFieldsBarChart(stats);
+            }
+
+            showErrorMessage(message) {
+                console.error(message);
+                // Could add UI error message here
             }
         }
 
-        function createLineChart(data) {
-            const ctx = document.getElementById('lineChart').getContext('2d');
-            
-            // Create growth trend data based on monthly progression
-            const growthData = data.data.map((value, index) => {
-                return value + (index * 2); // Simulate growth trend
-            });
-            
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'Programs Added',
-                        data: growthData,
-                        borderColor: '#00d4aa',
-                        backgroundColor: 'rgba(0, 212, 170, 0.1)',
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#00d4aa',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 5
-                    }]
-                },
-                options: {
+        // === CHART FACTORY ===
+        class ChartFactory {
+            static getCommonOptions() {
+                return {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'New Programs: ' + context.parsed.y;
+                    plugins: {
+                        legend: { display: false }
+                    }
+                };
+            }
+
+            static createLineChart(ctx, data) {
+                const growthData = data.data.map((value, index) => value + (index * 2));
+                
+                return new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Programs Added',
+                            data: growthData,
+                            borderColor: '#00d4aa',
+                            backgroundColor: 'rgba(0, 212, 170, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#00d4aa',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        ...ChartFactory.getCommonOptions(),
+                        plugins: {
+                            ...ChartFactory.getCommonOptions().plugins,
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `New Programs: ${context.parsed.y}`
                                 }
                             }
-                        }
-                    },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: '#f0f0f0' },
-                            title: {
-                                display: true,
-                                text: 'Number of Programs'
-                            }
                         },
-                        x: { 
-                            grid: { color: '#f0f0f0' },
-                            title: {
-                                display: true,
-                                text: 'Months'
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: '#f0f0f0' },
+                                title: { display: true, text: 'Number of Programs' }
+                            },
+                            x: { 
+                                grid: { color: '#f0f0f0' },
+                                title: { display: true, text: 'Months' }
                             }
                         }
                     }
-                }
-            });
-        }
+                });
+            }
 
-        function createBarChart(data) {
-            const ctx = document.getElementById('barChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.labels.map(label => label.substring(0, 20) + (label.length > 20 ? '...' : '')),
-                    datasets: [{
-                        label: 'Number of Programs',
-                        data: data.data,
-                        backgroundColor: ['#00d4aa', '#667eea', '#f093fb', '#f5576c', '#4facfe'],
-                        borderRadius: 8,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.parsed.y + ' programs offered';
+            static createBarChart(ctx, data) {
+                return new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels.map(label => 
+                            label.substring(0, 20) + (label.length > 20 ? '...' : '')
+                        ),
+                        datasets: [{
+                            label: 'Number of Programs',
+                            data: data.data,
+                            backgroundColor: ['#00d4aa', '#667eea', '#f093fb', '#f5576c', '#4facfe'],
+                            borderRadius: 8,
+                            borderSkipped: false,
+                        }]
+                    },
+                    options: {
+                        ...ChartFactory.getCommonOptions(),
+                        plugins: {
+                            ...ChartFactory.getCommonOptions().plugins,
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `${context.parsed.y} programs offered`
                                 }
                             }
-                        }
-                    },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: '#f0f0f0' },
-                            title: {
-                                display: true,
-                                text: 'Number of Programs'
-                            }
                         },
-                        x: { 
-                            grid: { display: false },
-                            title: {
-                                display: true,
-                                text: 'Universities'
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: '#f0f0f0' },
+                                title: { display: true, text: 'Number of Programs' }
+                            },
+                            x: { 
+                                grid: { display: false },
+                                title: { display: true, text: 'Universities' }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
+
+            static createDoughnutChart(ctx, labels, data, colors, options = {}) {
+                return new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels,
+                        datasets: [{
+                            data,
+                            backgroundColor: colors,
+                            borderWidth: 0,
+                            ...options.datasetOptions
+                        }]
+                    },
+                    options: {
+                        ...ChartFactory.getCommonOptions(),
+                        cutout: options.cutout || '50%',
+                        plugins: {
+                            legend: options.showLegend ? {
+                                position: 'bottom',
+                                labels: { 
+                                    padding: 20, 
+                                    font: { size: 12 },
+                                    usePointStyle: true
+                                }
+                            } : { display: false },
+                            tooltip: options.tooltip || {}
+                        }
+                    }
+                });
+            }
         }
 
-        function createPieChart(data) {
-            const ctx = document.getElementById('pieChart').getContext('2d');
+        // === DASHBOARD METHODS ===
+        DashboardController.prototype.createLineChart = function(data) {
+            const ctx = document.getElementById('lineChart')?.getContext('2d');
+            if (!ctx) return null;
+            return ChartFactory.createLineChart(ctx, data);
+        };
+
+        DashboardController.prototype.createBarChart = function(data) {
+            const ctx = document.getElementById('barChart')?.getContext('2d');
+            if (!ctx) return null;
+            return ChartFactory.createBarChart(ctx, data);
+        };
+
+        DashboardController.prototype.createPieChart = function(data) {
+            const ctx = document.getElementById('pieChart')?.getContext('2d');
+            if (!ctx) return null;
             
-            // Create field distribution data
             const fieldData = {
                 labels: ['Computer Engineering', 'AI Engineering', 'Digital Engineering', 'Other Fields'],
-                data: [45, 25, 20, 10] // Sample distribution
+                data: [45, 25, 20, 10]
             };
             
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: fieldData.labels,
-                    datasets: [{
-                        data: fieldData.data,
-                        backgroundColor: ['#00d4aa', '#667eea', '#f093fb', '#f5576c'],
-                        borderWidth: 0,
+            return ChartFactory.createDoughnutChart(
+                ctx, 
+                fieldData.labels, 
+                fieldData.data, 
+                ['#00d4aa', '#667eea', '#f093fb', '#f5576c'],
+                {
+                    showLegend: true,
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => `${context.label}: ${context.parsed}%`
+                        }
+                    },
+                    datasetOptions: {
                         hoverBorderWidth: 3,
                         hoverBorderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '50%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { 
-                                padding: 20, 
-                                font: { size: 12 },
-                                usePointStyle: true
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.label + ': ' + context.parsed + '%';
-                                }
-                            }
-                        }
                     }
                 }
-            });
-        }
+            );
+        };
 
-        function createMiniCharts(stats) {
-            // Mini chart 1 - Program Types Distribution
-            const ctx1 = document.getElementById('miniChart1').getContext('2d');
+        DashboardController.prototype.createMiniCharts = function(stats) {
+            this.createProgramTypesChart(stats);
+            this.createCostRangesChart(stats);
+        };
+
+        DashboardController.prototype.createProgramTypesChart = function(stats) {
+            const ctx = document.getElementById('miniChart1')?.getContext('2d');
+            if (!ctx) return null;
+
             const programTypes = stats.program_types || {};
             const typeValues = Object.values(programTypes);
             const typeLabels = Object.keys(programTypes);
-            
-            new Chart(ctx1, {
-                type: 'doughnut',
-                data: {
-                    labels: typeLabels,
-                    datasets: [{
-                        data: typeValues,
-                        backgroundColor: ['#00d4aa', '#667eea', '#f093fb'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '60%',
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.label + ': ' + context.parsed + ' programs';
-                                }
-                            }
-                        }
-                    }
-                }
+
+            // Generate unique colors for each program type
+            const colors = typeLabels.map((_, index) => {
+                const hue = (index * 137.5) % 360; // Use golden angle approximation for distinct hues
+                return `hsl(${hue}, 70%, 60%)`;
             });
 
-            // Mini chart 2 - Cost Distribution
-            const ctx2 = document.getElementById('miniChart2').getContext('2d');
-            const costRanges = stats.cost_ranges || {};
-            const costValues = Object.values(costRanges);
-            const costLabels = Object.keys(costRanges);
-            
-            new Chart(ctx2, {
+            return new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: costLabels,
+                    labels: typeLabels.map(label => label.length > 20 ? `${label.substring(0, 17)}...` : label),
                     datasets: [{
-                        data: costValues,
-                        backgroundColor: ['#667eea', '#00d4aa', '#f093fb', '#f5576c'],
+                        label: 'Number of Programs',
+                        data: typeValues,
+                        backgroundColor: colors,
                         borderRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
+                    plugins: {
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
-                                    const range = context.label;
-                                    return range + ': ' + context.parsed.y + ' programs';
-                                }
+                                label: (context) => `${context.label}: ${context.raw} programs`
                             }
                         }
                     },
                     scales: {
-                        y: { 
-                            display: false,
-                            beginAtZero: true
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Number of Programs' }
                         },
-                        x: { 
-                            display: false
+                        x: {
+                            title: { display: true, text: 'Program Types' }
                         }
                     }
                 }
             });
-        }
+        };
 
-        function createDonutCharts() {
-            // Donut chart 1
-            const ctx1 = document.getElementById('donut1').getContext('2d');
-            new Chart(ctx1, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [75, 25],
-                        backgroundColor: ['#00d4aa', '#f0f0f0'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: { legend: { display: false } }
-                }
+        DashboardController.prototype.createCostRangesChart = function(stats) {
+            const ctx = document.getElementById('miniChart2')?.getContext('2d');
+            if (!ctx) return null;
+
+            const universityTuition = stats.university_tuition || {};
+            const sortedTuition = Object.entries(universityTuition)
+                .sort(([, a], [, b]) => a - b) // Sort by tuition fees in ascending order
+                .slice(0, 10); // Take the top 10 universities with the lowest tuition fees
+
+            const universities = sortedTuition.map(([university]) => university);
+            const tuitionValues = sortedTuition.map(([, tuition]) => tuition);
+
+            // Generate unique colors for each university
+            const colors = universities.map((_, index) => {
+                const hue = (index * 137.5) % 360; // Use golden angle approximation for distinct hues
+                return `hsl(${hue}, 70%, 60%)`;
             });
 
-            // Donut chart 2
-            const ctx2 = document.getElementById('donut2').getContext('2d');
-            new Chart(ctx2, {
-                type: 'doughnut',
+            return new Chart(ctx, {
+                
+                type: 'bar',
                 data: {
+                    labels: universities.map(uni => uni.length > 20 ? `${uni.substring(0, 17)}...` : uni),
                     datasets: [{
-                        data: [60, 40],
-                        backgroundColor: ['#667eea', '#f0f0f0'],
-                        borderWidth: 0
+                        label: 'Tuition Fees (THB)',
+                        data: tuitionValues,
+                        backgroundColor: colors,
+                        borderRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        function createProgressChart(programDistribution) {
-            const ctx = document.getElementById('progressChart').getContext('2d');
-            
-            // Create university program count data
-            const universityData = {
-                'จุฬาลงกรณ์มหาวิทยาลัย': 8,
-                'มหาวิทยาลัยเกษตรศาสตร์': 6,
-                'มหาวิทยาลัยขอนแก่น': 5,
-                'มหาวิทยาลัยสงขลานครินทร์': 4,
-                'มหาวิทยาลัยมหิดล': 3,
-                'มหาวิทยาลัยธรรมศาสตร์': 4,
-                'มหาวิทยาลัยเชียงใหม่': 5,
-                'มหาวิทยาลัยบูรพา': 3
-            };
-            
-            // Sort universities by program count
-            const sortedData = Object.entries(universityData)
-                .sort(([,a], [,b]) => b - a);
-            
-            const topUniversity = sortedData[0];
-            const topUniName = topUniversity[0];
-            const topUniCount = topUniversity[1];
-            const totalPrograms = Object.values(universityData).reduce((sum, val) => sum + val, 0);
-            const percentage = Math.round((topUniCount / totalPrograms) * 100);
-            
-            // Update the percentage display to show top university percentage
-            document.querySelector('.progress-value').textContent = percentage + '%';
-            
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: [topUniName.substring(0, 20) + '...', 'มหาวิทยาลัยอื่นๆ'],
-                    datasets: [{
-                        data: [topUniCount, totalPrograms - topUniCount],
-                        backgroundColor: ['#00d4aa', '#f0f0f0'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '80%',
-                    plugins: { 
-                        legend: { 
-                            display: true,
-                            position: 'bottom',
-                            labels: { 
-                                padding: 15,
-                                font: { size: 10 },
-                                usePointStyle: true
-                            }
-                        },
+                    plugins: {
+                        legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
-                                    if (context.dataIndex === 0) {
-                                        return topUniName + ': ' + topUniCount + ' หลักสูตร';
-                                    } else {
-                                        return 'มหาวิทยาลัยอื่นๆ: ' + (totalPrograms - topUniCount) + ' หลักสูตร';
-                                    }
-                                }
+                                label: (context) => `${context.label}: ${new Intl.NumberFormat('th-TH').format(context.raw)} THB`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Tuition Fees (THB)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Universities' }
+                        }
+                    }
+                }});
+        };
+
+        DashboardController.prototype.createProgressChart = function(stats) {
+            const ctx = document.getElementById('progressChart')?.getContext('2d');
+            if (!ctx) return null;
+            
+            // ใช้เฉพาะข้อมูลจริงจาก backend
+            const universityTuition = stats.university_tuition || {};
+            
+            // ตรวจสอบว่ามีข้อมูลจริงหรือไม่
+            if (Object.keys(universityTuition).length === 0) {
+                // ถ้าไม่มีข้อมูลจริง ไม่แสดงกราฟ
+                const progressValueEl = document.querySelector('.progress-value');
+                if (progressValueEl) {
+                    progressValueEl.textContent = 'N/A';
+                }
+                return null;
+            }
+            
+            // เตรียมข้อมูลสำหรับแสดงทุกมหาลัยที่มีข้อมูลจริง
+            const universities = Object.keys(universityTuition);
+            const tuitionValues = Object.values(universityTuition);
+            const maxTuition = Math.max(...tuitionValues);
+            
+            // สร้างสีสำหรับทุกมหาลัย
+            const colors = [
+                '#f5576c', '#00d4aa', '#667eea', '#f093fb', 
+                '#4facfe', '#43e97b', '#fa709a', '#ff9a9e',
+                '#a8edea', '#fed6e3', '#ffecd2', '#fcb69f'
+            ];
+            
+            // ตัดชื่อมหาลัยให้สั้นลง
+            const shortLabels = universities.map(uni => {
+                if (uni.length > 20) {
+                    return uni.substring(0, 17) + '...';
+                }
+                return uni;
+            });
+            
+            // Update display แสดงค่าเทอมสูงสุด
+            const progressValueEl = document.querySelector('.progress-value');
+            if (progressValueEl) {
+                progressValueEl.textContent = new Intl.NumberFormat('th-TH').format(maxTuition);
+            }
+            
+            return ChartFactory.createDoughnutChart(
+                ctx,
+                shortLabels,
+                tuitionValues,
+                colors.slice(0, universities.length),
+                {
+                    cutout: '60%',
+                    showLegend: true,
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const fullName = universities[context.dataIndex];
+                                return `${fullName}: ${new Intl.NumberFormat('th-TH').format(context.parsed)} บาท/ปี`;
                             }
                         }
                     }
                 }
+            );
+        };
+
+        DashboardController.prototype.createTuitionBarChart = function(data) {
+            const ctx = document.getElementById('tuitionBarChart')?.getContext('2d');
+            if (!ctx) return null;
+
+            const universities = Object.keys(data.university_tuition || {});
+            const tuitionValues = Object.values(data.university_tuition || {});
+
+            // Generate unique colors for each university
+            const colors = universities.map((_, index) => {
+                const hue = (index * 137.5) % 360; // Use golden angle approximation for distinct hues
+                return `hsl(${hue}, 70%, 60%)`;
             });
-        }
+
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: universities.map(uni => uni.length > 20 ? `${uni.substring(0, 17)}...` : uni),
+                    datasets: [{
+                        label: 'Tuition Fees (THB)',
+                        data: tuitionValues,
+                        backgroundColor: colors,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.label}: ${new Intl.NumberFormat('th-TH').format(context.raw)} THB`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Tuition Fees (THB)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Universities' }
+                        }
+                    }
+                }});
+        };
+
+        DashboardController.prototype.createFieldsBarChart = function(data) {
+            const ctx = document.getElementById('fieldsBarChart')?.getContext('2d');
+            if (!ctx) return null;
+
+            const fields = Object.keys(data.field_counts || {});
+            const fieldCounts = Object.values(data.field_counts || {});
+
+            // Generate unique colors for each field
+            const colors = fields.map((_, index) => {
+                const hue = (index * 137.5) % 360; // Use golden angle approximation for distinct hues
+                return `hsl(${hue}, 70%, 60%)`;
+            });
+
+            return ChartFactory.createDoughnutChart(
+                ctx,
+                fields.map(field => field.length > 20 ? `${field.substring(0, 17)}...` : field),
+                fieldCounts,
+                colors,
+                {
+                    showLegend: true,
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => `${context.label}: ${context.raw} universities`
+                        }
+                    }
+                }
+            );
+        };
+
+        // === INITIALIZE DASHBOARD ===
+        document.addEventListener('DOMContentLoaded', () => {
+            new DashboardController();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const universitySelect = document.getElementById('university-select');
+            const uniName = document.getElementById('uni-name');
+            const uniPrograms = document.getElementById('uni-programs');
+
+            // Function to display university details
+            function displayUniversityDetails(universityName) {
+                if (!universityName) {
+                    // Default to สงขลานครินทร์
+                    universityName = 'มหาวิทยาลัยสงขลานครินทร์';
+                }
+
+                fetch(`/api/university-details/${encodeURIComponent(universityName)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            uniName.textContent = 'Error loading data';
+                            uniPrograms.innerHTML = '<p>ไม่สามารถโหลดข้อมูลได้</p>';
+                        } else {
+                            uniName.textContent = data.university;
+                            
+                            // Display programs separately with individual tuition
+                            let programsHtml = '';
+                            if (data.program_details && data.program_details.length > 0) {
+                                data.program_details.forEach((program, index) => {
+                                    const costDisplay = program.cost !== 'ไม่ระบุ' ? 
+                                        new Intl.NumberFormat('th-TH').format(program.cost) + ' บาท' : 'ไม่ระบุ';
+                                    
+                                    programsHtml += `
+                                        <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 5px; border-left: 4px solid #00d4aa;">
+                                            <strong>สาขา:</strong> ${program.name}<br>
+                                            <strong>หลักสูตร:</strong> ${program.course}<br>
+                                            <strong>ประเภทหลักสูตร:</strong> ${program.type}<br>
+                                            <strong>ค่าใช้จ่าย:</strong> ${costDisplay}
+                                        </div>
+                                    `;
+                                });
+                            } else {
+                                programsHtml = '<p>ไม่พบข้อมูลสาขา</p>';
+                            }
+                            uniPrograms.innerHTML = programsHtml;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching university details:', error);
+                        uniName.textContent = 'Error';
+                        uniPrograms.innerHTML = '<p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+                    });
+            }
+
+            // Load default university (สงขลานครินทร์) on page load
+            displayUniversityDetails('มหาวิทยาลัยสงขลานครินทร์');
+
+            // Fetch university list and populate dropdown
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    const universities = Object.keys(data.university_tuition || {});
+                    universities.forEach(uni => {
+                        const option = document.createElement('option');
+                        option.value = uni;
+                        option.textContent = uni;
+                        universitySelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching university list:', error));
+
+            // Fetch and display university details on selection
+            universitySelect.addEventListener('change', () => {
+                const selectedUniversity = universitySelect.value;
+                displayUniversityDetails(selectedUniversity);
+            });
+        });
     </script>
 </body>
 </html>

@@ -8,29 +8,13 @@ app = Flask(__name__)
 
 # Load and process data
 def load_data():
-    try:
         # Load the data from Excel file
-        df = pd.read_excel('tcas_eng_data_cleaned.xlsx')
+        df = pd.read_excel('data/tcas_eng_data_cleaned.xlsx')
         print(f"Data loaded successfully. Shape: {df.shape}")
         print(f"Columns: {list(df.columns)}")
         print(f"First few rows:")
         print(df.head())
         return df
-    except Exception as e:
-        print(f"Error loading data: {e}")
-        # Return sample data if file not found
-        return create_sample_data()
-
-def create_sample_data():
-    # Create sample data based on the provided CSV structure
-    data = {
-        'มหาวิทยาลัย': ['จุฬาลงกรณ์มหาวิทยาลัย', 'มหาวิทยาลัยเกษตรศาสตร์', 'มหาวิทยาลัยขอนแก่น', 
-                      'มหาวิทยาลัยเชียงใหม่', 'มหาวิทยาลัยธรรมศาสตร์'] * 20,
-        'ชื่อสาขาวิชา': ['วิศวกรรมคอมพิวเตอร์', 'วิศวกรรมปัญญาประดิษฐ์', 'วิศวกรรมดิจิทัล'] * 33,
-        'ประเภทหลักสูตร': ['ภาษาไทย ปกติ', 'นานาชาติ'] * 50,
-        'ค่าใช้จ่าย': [25500, 19500, 20000, 23000, 18900, 30000, 25000, 18000, 28000, 50000] * 10
-    }
-    return pd.DataFrame(data)
 
 # Initialize data
 df = load_data()
@@ -54,9 +38,20 @@ def get_stats():
         cost_data = df['ค่าใช้จ่าย'].dropna()  # Remove NaN values
         max_cost = cost_data.max() if not cost_data.empty else 0
         min_cost = cost_data.min() if not cost_data.empty else 0
+        
+        # Find universities with max and min costs
+        max_cost_uni = ""
+        min_cost_uni = ""
+        if not cost_data.empty:
+            max_cost_row = df[df['ค่าใช้จ่าย'] == max_cost].iloc[0]
+            min_cost_row = df[df['ค่าใช้จ่าย'] == min_cost].iloc[0]
+            max_cost_uni = max_cost_row['มหาวิทยาลัย'] if 'มหาวิทยาลัย' in max_cost_row else ""
+            min_cost_uni = min_cost_row['มหาวิทยาลัย'] if 'มหาวิทยาลัย' in min_cost_row else ""
     else:
         max_cost = 0
         min_cost = 0
+        max_cost_uni = ""
+        min_cost_uni = ""
     
     # Program type distribution
     program_types = df['ประเภทหลักสูตร'].value_counts().to_dict()
@@ -64,23 +59,52 @@ def get_stats():
     # Top universities by program count
     uni_counts = df['มหาวิทยาลัย'].value_counts().head(5).to_dict()
     
-    # Cost distribution
-    cost_ranges = pd.cut(pd.to_numeric(df['ค่าใช้จ่าย'], errors='coerce'), 
-                        bins=[0, 20000, 30000, 50000, 100000], 
-                        labels=['<20K', '20-30K', '30-50K', '>50K']).value_counts().to_dict()
     
     # University program distribution for progress chart
     university_program_counts = df['มหาวิทยาลัย'].value_counts().to_dict()
     
+    # University tuition data for the new progress chart
+    university_tuition = {}
+    if 'มหาวิทยาลัย' in df.columns and 'ค่าใช้จ่าย' in df.columns:
+        # Calculate average tuition per university from real data only
+        tuition_by_uni = df.groupby('มหาวิทยาลัย')['ค่าใช้จ่าย'].mean().dropna()
+        university_tuition = {uni: round(cost, 0) for uni, cost in tuition_by_uni.items()}
+        print(f"University tuition data calculated from real data: {university_tuition}")
+    else:
+        print("Required columns not found for university tuition calculation")
+        # ไม่ใส่ข้อมูล sample - ให้เป็น dict ว่าง
+    
+    # Most offered fields across universities
+    field_counts = {}
+    if 'ชื่อสาขาวิชา' in df.columns and 'มหาวิทยาลัย' in df.columns:
+        field_counts = df.groupby('ชื่อสาขาวิชา')['มหาวิทยาลัย'].nunique().sort_values(ascending=False).to_dict()
+        print(f"Field counts calculated: {field_counts}")
+    else:
+        print("Required columns not found for field counts calculation")
+
+    # Top 10 universities with the lowest tuition fees
+    top_10_lowest_tuition = {}
+    if 'มหาวิทยาลัย' in df.columns and 'ค่าใช้จ่าย' in df.columns:
+        tuition_by_uni = df.groupby('มหาวิทยาลัย')['ค่าใช้จ่าย'].mean().dropna()
+        sorted_tuition = tuition_by_uni.sort_values().head(10)
+        top_10_lowest_tuition = {uni: round(cost, 0) for uni, cost in sorted_tuition.items()}
+        print(f"Top 10 universities with the lowest tuition fees: {top_10_lowest_tuition}")
+    else:
+        print("Required columns not found for top 10 lowest tuition fees calculation")
+
     return jsonify({
         'total_programs': total_programs,
         'total_universities': total_universities,
         'max_cost': round(max_cost, 0),
         'min_cost': round(min_cost, 0),
+        'max_cost_university': max_cost_uni,
+        'min_cost_university': min_cost_uni,
         'program_types': program_types,
         'university_counts': uni_counts,
-        'cost_ranges': cost_ranges,
-        'program_distribution': university_program_counts  # Updated for university distribution
+        'program_distribution': university_program_counts,  # University distribution
+        'university_tuition': university_tuition,  # New tuition data
+        'field_counts': field_counts,  # Most offered fields data
+        'top_10_lowest_tuition': top_10_lowest_tuition  # New data for top 10 lowest tuition fees
     })
 
 @app.route('/api/chart-data')
@@ -147,6 +171,42 @@ def get_chart_data():
                 'data': [45, 25, 20, 10]
             }
         })
+
+@app.route('/api/university-details/<university_name>')
+def get_university_details(university_name):
+    try:
+        # Filter data for the selected university
+        university_data = df[df['มหาวิทยาลัย'] == university_name]
+
+        if university_data.empty:
+            return jsonify({'error': 'University not found'}), 404
+
+        # Extract details with individual program costs - show all combinations
+        program_details = []
+        for _, row in university_data.iterrows():
+            program_name = row['ชื่อสาขาวิชา']
+            program_type = row['ประเภทหลักสูตร'] if 'ประเภทหลักสูตร' in row and pd.notna(row['ประเภทหลักสูตร']) else 'ไม่ระบุ'
+            program_course = row['หลักสูตร'] if 'หลักสูตร' in row and pd.notna(row['หลักสูตร']) else 'ไม่ระบุ'
+            program_cost = row['ค่าใช้จ่าย'] if pd.notna(row['ค่าใช้จ่าย']) else 'ไม่ระบุ'
+            
+            program_details.append({
+                'name': program_name,
+                'type': program_type,
+                'course': program_course,
+                'cost': round(program_cost, 0) if program_cost != 'ไม่ระบุ' else 'ไม่ระบุ'
+            })
+
+        # Overall average tuition for the university
+        avg_tuition = university_data['ค่าใช้จ่าย'].mean()
+
+        return jsonify({
+            'university': university_name,
+            'program_details': program_details,
+            'average_tuition': round(avg_tuition, 2) if not pd.isna(avg_tuition) else 'N/A'
+        })
+    except Exception as e:
+        print(f"Error fetching university details: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
