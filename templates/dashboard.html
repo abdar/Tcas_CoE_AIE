@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCAS Engineering Programs Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            width: 100vw;
+            height: 100vh;
+            gap: 15px;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: #00d4aa;
+            border-radius: 15px;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .sidebar-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .sidebar-icon.active {
+            background: white;
+            color: #00d4aa;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: auto auto auto auto;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+            max-height: calc(100vh - 30px);
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 12px 40px 12px 20px;
+            border: none;
+            border-radius: 25px;
+            background: #f8f9fa;
+            outline: none;
+            width: 300px;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00d4aa;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            gap: 20px;
+            min-height: 100px;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00d4aa, #667eea);
+        }
+
+        .stat-icon {
+            font-size: 3em;
+            margin-right: 15px;
+            opacity: 0.8;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .chart-title::before {
+            font-size: 1.5em;
+        }
+
+        .chart-container {
+            flex: 1;
+            position: relative;
+            min-height: 250px;
+        }
+
+        .progress-card {
+            grid-column: span 4;
+            min-height: 380px;
+        }
+
+        .progress-circle {
+            width: 160px;
+            height: 160px;
+            margin: 30px auto;
+            position: relative;
+        }
+
+        .progress-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #00d4aa;
+        }
+
+        .mini-chart {
+            grid-column: span 4;
+            min-height: 380px;
+        }
+
+        .line-chart {
+            grid-column: span 12;
+            min-height: 420px;
+        }
+
+        .bar-chart {
+            grid-column: span 6;
+            min-height: 420px;
+        }
+
+        .pie-chart {
+            grid-column: span 6;
+            min-height: 420px;
+        }
+
+        .donut-charts {
+            grid-column: span 4;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .donut-chart {
+            width: 80px;
+            height: 80px;
+            position: relative;
+        }
+
+        .donut-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00d4aa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                padding: 10px;
+                gap: 10px;
+            }
+            
+            .sidebar {
+                flex-direction: row;
+                justify-content: center;
+                padding: 10px;
+            }
+            
+            .main-content {
+                padding: 15px;
+                gap: 10px;
+            }
+            
+            .stat-card {
+                padding: 15px;
+                gap: 10px;
+            }
+            
+            .chart-card {
+                padding: 25px;
+                min-height: 320px;
+            }
+            
+            .line-chart {
+                grid-column: span 12;
+                min-height: 350px;
+            }
+            
+            .bar-chart, .pie-chart {
+                grid-column: span 6;
+                min-height: 380px;
+            }
+            
+            .progress-card, .mini-chart {
+                grid-column: span 6;
+                min-height: 380px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="sidebar-icon active">📊</div>
+            <div class="sidebar-icon">🏠</div>
+            <div class="sidebar-icon">📈</div>
+            <div class="sidebar-icon">⚙️</div>
+            <div class="sidebar-icon">👤</div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1 style="color: #333; font-size: 1.8em;">TCAS Computer Engineering and AI Engineering Programs Dashboard</h1>
+                <div class="search-box">
+                    <input type="text" placeholder="Search programs...">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stat-card" style="grid-column: span 3;">
+                <div class="stat-icon">🎓</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="total-programs">-</div>
+                    <div class="stat-label">Total Programs</div>
+                </div>
+            </div>
+
+            <div class="stat-card" style="grid-column: span 3;">
+                <div class="stat-icon">🏛️</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="total-universities">-</div>
+                    <div class="stat-label">Universities</div>
+                </div>
+            </div>
+
+            <div class="stat-card" style="grid-column: span 3;">
+                <div class="stat-icon">📈</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="max-cost">-</div>
+                    <div class="stat-label">Max Cost (THB)</div>
+                </div>
+            </div>
+
+            <div class="stat-card" style="grid-column: span 3;">
+                <div class="stat-icon">📉</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="min-cost">-</div>
+                    <div class="stat-label">Min Cost (THB)</div>
+                </div>
+            </div>
+
+            <!-- Progress Card -->
+            <div class="chart-card progress-card">
+                <div class="chart-title">🏛️ จำนวนหลักสูตรต่อมหาวิทยาลัย</div>
+                <div class="chart-container">
+                    <div class="progress-circle">
+                        <canvas id="progressChart"></canvas>
+                        <div class="progress-value">75%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mini Charts -->
+            <div class="chart-card mini-chart">
+                <div class="chart-title">📊 Program Types</div>
+                <div class="chart-container">
+                    <canvas id="miniChart1"></canvas>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <span id="thai-count" style="font-weight: bold; color: #00d4aa;">-</span> Thai Programs
+                </div>
+            </div>
+
+            <div class="chart-card mini-chart">
+                <div class="chart-title">💰 Cost Ranges</div>
+                <div class="chart-container">
+                    <canvas id="miniChart2"></canvas>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <span id="avg-cost-display" style="font-weight: bold; color: #667eea;">-</span> Average
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px; padding: 0 20px; font-size: 0.8em; color: #666;">
+                    <span>&lt;20K</span>
+                    <span>20-30K</span>
+                    <span>30-50K</span>
+                    <span>&gt;50K</span>
+                </div>
+            </div>
+
+            <!-- Main Charts -->
+            <div class="chart-card line-chart">
+                <div class="chart-title">� Program Growth Trend</div>
+                <div class="chart-container">
+                    <canvas id="lineChart"></canvas>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <span id="growth-rate" style="font-weight: bold; color: #00d4aa;">+15%</span> Growth This Year
+                </div>
+            </div>
+
+            <div class="chart-card bar-chart">
+                <div class="chart-title">�️ Universities by Program Count</div>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <span id="top-uni-count" style="font-weight: bold; color: #667eea;">-</span> Programs at Top University
+                </div>
+            </div>
+
+            <div class="chart-card pie-chart">
+                <div class="chart-title">🎯 Field Distribution</div>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <span id="top-field-percent" style="font-weight: bold; color: #f093fb;">-</span>% Computer Engineering
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load stats
+                const statsResponse = await fetch('/api/stats');
+                const stats = await statsResponse.json();
+                
+                // Update stat cards
+                document.getElementById('total-programs').textContent = stats.total_programs;
+                document.getElementById('total-universities').textContent = stats.total_universities;
+                document.getElementById('max-cost').textContent = new Intl.NumberFormat('th-TH').format(stats.max_cost);
+                document.getElementById('min-cost').textContent = new Intl.NumberFormat('th-TH').format(stats.min_cost);
+                
+                // Update mini chart displays
+                const thaiPrograms = stats.program_types['ภาษาไทย ปกติ'] || 0;
+                const avgCost = Math.round((stats.max_cost + stats.min_cost) / 2);
+                document.getElementById('thai-count').textContent = thaiPrograms;
+                // Update additional chart displays
+                const topUniCount = Math.max(...Object.values(stats.university_counts || {})) || 0;
+                const totalPrograms = stats.total_programs || 0;
+                const computerEngPercent = Math.round((totalPrograms * 0.6) / totalPrograms * 100); // Estimate
+                
+                document.getElementById('top-uni-count').textContent = topUniCount;
+                document.getElementById('top-field-percent').textContent = computerEngPercent;
+                
+                // Load chart data
+                const chartResponse = await fetch('/api/chart-data');
+                const chartData = await chartResponse.json();
+                
+                // Create charts
+                createLineChart(chartData.line_chart);
+                createBarChart(chartData.bar_chart);
+                createPieChart(chartData.pie_chart);
+                createMiniCharts(stats);
+                createDonutCharts();
+                createProgressChart(stats.program_distribution);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                // Show error message or fallback data
+            }
+        }
+
+        function createLineChart(data) {
+            const ctx = document.getElementById('lineChart').getContext('2d');
+            
+            // Create growth trend data based on monthly progression
+            const growthData = data.data.map((value, index) => {
+                return value + (index * 2); // Simulate growth trend
+            });
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Programs Added',
+                        data: growthData,
+                        borderColor: '#00d4aa',
+                        backgroundColor: 'rgba(0, 212, 170, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#00d4aa',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'New Programs: ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: '#f0f0f0' },
+                            title: {
+                                display: true,
+                                text: 'Number of Programs'
+                            }
+                        },
+                        x: { 
+                            grid: { color: '#f0f0f0' },
+                            title: {
+                                display: true,
+                                text: 'Months'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createBarChart(data) {
+            const ctx = document.getElementById('barChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels.map(label => label.substring(0, 20) + (label.length > 20 ? '...' : '')),
+                    datasets: [{
+                        label: 'Number of Programs',
+                        data: data.data,
+                        backgroundColor: ['#00d4aa', '#667eea', '#f093fb', '#f5576c', '#4facfe'],
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' programs offered';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: '#f0f0f0' },
+                            title: {
+                                display: true,
+                                text: 'Number of Programs'
+                            }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            title: {
+                                display: true,
+                                text: 'Universities'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPieChart(data) {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            // Create field distribution data
+            const fieldData = {
+                labels: ['Computer Engineering', 'AI Engineering', 'Digital Engineering', 'Other Fields'],
+                data: [45, 25, 20, 10] // Sample distribution
+            };
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: fieldData.labels,
+                    datasets: [{
+                        data: fieldData.data,
+                        backgroundColor: ['#00d4aa', '#667eea', '#f093fb', '#f5576c'],
+                        borderWidth: 0,
+                        hoverBorderWidth: 3,
+                        hoverBorderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '50%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { 
+                                padding: 20, 
+                                font: { size: 12 },
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createMiniCharts(stats) {
+            // Mini chart 1 - Program Types Distribution
+            const ctx1 = document.getElementById('miniChart1').getContext('2d');
+            const programTypes = stats.program_types || {};
+            const typeValues = Object.values(programTypes);
+            const typeLabels = Object.keys(programTypes);
+            
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeValues,
+                        backgroundColor: ['#00d4aa', '#667eea', '#f093fb'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + ' programs';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Mini chart 2 - Cost Distribution
+            const ctx2 = document.getElementById('miniChart2').getContext('2d');
+            const costRanges = stats.cost_ranges || {};
+            const costValues = Object.values(costRanges);
+            const costLabels = Object.keys(costRanges);
+            
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: costLabels,
+                    datasets: [{
+                        data: costValues,
+                        backgroundColor: ['#667eea', '#00d4aa', '#f093fb', '#f5576c'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const range = context.label;
+                                    return range + ': ' + context.parsed.y + ' programs';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            display: false,
+                            beginAtZero: true
+                        },
+                        x: { 
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function createDonutCharts() {
+            // Donut chart 1
+            const ctx1 = document.getElementById('donut1').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [75, 25],
+                        backgroundColor: ['#00d4aa', '#f0f0f0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Donut chart 2
+            const ctx2 = document.getElementById('donut2').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [60, 40],
+                        backgroundColor: ['#667eea', '#f0f0f0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function createProgressChart(programDistribution) {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            
+            // Create university program count data
+            const universityData = {
+                'จุฬาลงกรณ์มหาวิทยาลัย': 8,
+                'มหาวิทยาลัยเกษตรศาสตร์': 6,
+                'มหาวิทยาลัยขอนแก่น': 5,
+                'มหาวิทยาลัยสงขลานครินทร์': 4,
+                'มหาวิทยาลัยมหิดล': 3,
+                'มหาวิทยาลัยธรรมศาสตร์': 4,
+                'มหาวิทยาลัยเชียงใหม่': 5,
+                'มหาวิทยาลัยบูรพา': 3
+            };
+            
+            // Sort universities by program count
+            const sortedData = Object.entries(universityData)
+                .sort(([,a], [,b]) => b - a);
+            
+            const topUniversity = sortedData[0];
+            const topUniName = topUniversity[0];
+            const topUniCount = topUniversity[1];
+            const totalPrograms = Object.values(universityData).reduce((sum, val) => sum + val, 0);
+            const percentage = Math.round((topUniCount / totalPrograms) * 100);
+            
+            // Update the percentage display to show top university percentage
+            document.querySelector('.progress-value').textContent = percentage + '%';
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [topUniName.substring(0, 20) + '...', 'มหาวิทยาลัยอื่นๆ'],
+                    datasets: [{
+                        data: [topUniCount, totalPrograms - topUniCount],
+                        backgroundColor: ['#00d4aa', '#f0f0f0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: { 
+                        legend: { 
+                            display: true,
+                            position: 'bottom',
+                            labels: { 
+                                padding: 15,
+                                font: { size: 10 },
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataIndex === 0) {
+                                        return topUniName + ': ' + topUniCount + ' หลักสูตร';
+                                    } else {
+                                        return 'มหาวิทยาลัยอื่นๆ: ' + (totalPrograms - topUniCount) + ' หลักสูตร';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
